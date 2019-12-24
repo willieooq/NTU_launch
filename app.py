@@ -80,8 +80,8 @@ def handle_follow(event):
 # handle message
 @handler.add(MessageEvent, message=(TextMessage, LocationMessage))
 def handle_message(event):
-    list1=[]
-    item = {'user_id':'user_id','option':'start','area':'no','time':'0','price':'0'}
+    list1=['0']
+    item = {'user_id':'user_id','option':'start','area':'no','time':'0','price':'0','variable':'0'}
     #read excel
     wu = wb['User']
     ws = wb['Restaurant']
@@ -95,6 +95,7 @@ def handle_message(event):
             item['area'] = wu[v[str(cell.column+2)]+str(cell.row)].value
             item['time'] = wu[v[str(cell.column+3)]+str(cell.row)].value
             item['price'] = wu[v[str(cell.column+4)]+str(cell.row)].value
+            item['variable'] = wu[v[str(cell.column+5)]+str(cell.row)].value 
             print('option=',item['option'])#test
             wb.save("restaurant_list.xlsx")
     user_message = event.message.text
@@ -121,12 +122,13 @@ def handle_message(event):
             excel_save(item['user_id'],item['time'],3)
             excel_save(item['user_id'],item['option'],1)
             line_bot_api.push_message(item['user_id'],TemplateSendMessage(alt_text='time',template=price_tem))
-        elif((user_message == '<100' or user_message == '100~150' or user_message == '$$') and item['option'] == 'price'):
+        elif((user_message == '<100' or user_message == '100~150' or user_message == '$$') and item['option'] == 'price')or(user_message == 'restart' and item['option'] == 'result'):
             line_bot_api.push_message(item['user_id'],TextSendMessage(text = '處理中請稍等...'))
-            item['price'] = user_message
-            item['option'] = 'result'
-            excel_save(item['user_id'],item['price'],4)
-            excel_save(item['user_id'],item['option'],1)
+            if user_message != 'restart':
+                item['price'] = user_message
+                item['option'] = 'result'
+                excel_save(item['user_id'],item['price'],4)
+                excel_save(item['user_id'],item['option'],1)
             #fliter
             columns=tuple(ws.columns)
             column1=columns[1]
@@ -136,10 +138,13 @@ def handle_message(event):
                     if cell1.value ==  address:
                         column2=columns[2]
                         for cell2 in column2:
-                            if cell2.value ==  int(price[item['price']]):
-                                list1.append(ws[v[str(cell2.column-2)]+str(cell2.row)].value)
-                            elif (int(price[item['price']]) == 3):
-                                list1.append(ws[v[str(cell2.column-2)]+str(cell2.row)].value)
+                            if ws[v[str(cell2.column-2)]+str(cell2.row)].value != None:
+                                if cell2.value ==  int(price[item['price']]):
+                                    list1.append(ws[v[str(cell2.column-2)]+str(cell2.row)].value)
+                                elif (int(price[item['price']]) == 3):
+                                    list1.append(ws[v[str(cell2.column-2)]+str(cell2.row)].value)
+            item['variable'] = chr(len(list1)-1)
+            excel_save(item['user_id'],item['variable'],5)
             restaurant = list1[random.randint(0,len(list1)-1)]
             for cell in column0:
                 if cell.value == restaurant:
@@ -148,12 +153,6 @@ def handle_message(event):
                                                                 ,TextSendMessage(text = list(ws.rows)[cell.row][3].value)
                                                                 ,TextSendMessage(text = list(ws.rows)[cell.row][4].value)
                                                                 ,TemplateSendMessage(alt_text='OK?',template=ok_tem)])      
-        elif (user_message == 'restart' and item['option'] == 'result'):
-            restaurant = list1[random.randint(0,len(list1)-1)]
-            line_bot_api.push_message(item['user_id'],[ TextSendMessage(text = list(ws.rows)[cell.row][0].value)
-                                                                ,TextSendMessage(text = list(ws.rows)[cell.row][3].value)
-                                                                ,TextSendMessage(text = list(ws.rows)[cell.row][4].value)
-                                                                ,TemplateSendMessage(alt_text='OK?',template=ok_tem)])
         elif (user_message == 'Ok' and item['option'] == 'result'):
             item['option'] = 'start'
             excel_save(item['user_id'],item['option'],1)
