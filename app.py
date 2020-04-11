@@ -22,9 +22,9 @@ wb = load_workbook(path)
 app = Flask(__name__)
 
 # line bot key
-line_channel_access_token ="OA1RYruyUGUDao3jTt8p4ONaTdoclyZV9k8c0QQGYx1V3Px8YVkegHI/6NOeUbeRujess1YFJxiQnH30MFdKzoDBMsLBeMonz8QPe1rB+L3AJP3JQQgKUWzhcsjM/fcWGskXsfxNmy69RYo83WRtggdB04t89/1O/w1cDnyilFU="
-line_channel_secret ='6f5adc5e2b6804907f70bdaa6e91bf7c'
-to = 'U43bfea6ae84a4af42ff1ebf3c310229d'
+line_channel_access_token ="your channel_access_token"
+line_channel_secret =" your channel_secret "
+to = "your id"
 
 # Channel Access Token
 line_bot_api = LineBotApi(line_channel_access_token)
